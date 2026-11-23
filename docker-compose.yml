@@ -1,6 +1,7 @@
 # Production-style deployment: PostgreSQL + API + web (nginx).
 #   cp .env.example .env   # then set POSTGRES_PASSWORD and JWT_SECRET
-#   docker compose up -d --build
+#   docker compose pull && docker compose up -d   # use the published images
+#   docker compose up -d --build                  # or build from source
 # The site and the API are served together on WEB_PORT (API under /api).
 name: taskplus
 
@@ -21,6 +22,7 @@ services:
       retries: 20
 
   api:
+    image: atharvdeshmukh014/task-plus:api
     build: ./backend
     restart: unless-stopped
     depends_on:
@@ -39,6 +41,7 @@ services:
       retries: 10
 
   web:
+    image: atharvdeshmukh014/task-plus:web
     build: ./web
     restart: unless-stopped
     depends_on:

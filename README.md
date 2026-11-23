@@ -72,8 +72,10 @@ make migrate
 
 ```bash
 cp .env.example .env    # set POSTGRES_PASSWORD and JWT_SECRET
-docker compose up -d --build
+docker compose pull && docker compose up -d   # published images (or: docker compose up -d --build)
 ```
+
+Images are published to Docker Hub as `atharvdeshmukh014/task-plus:api` and `:web` (linux/amd64 and linux/arm64), with `:api-<commit>` / `:web-<commit>` tags for pinning a release.
 
 Put HTTPS in front of it (for example a load balancer or Caddy) and build the mobile app with `EXPO_PUBLIC_API_URL` pointing at that host. Mobile store builds use EAS (`npx eas-cli@latest build`).
 
