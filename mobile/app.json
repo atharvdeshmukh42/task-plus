@@ -38,6 +38,12 @@
         }
       ]
     ],
-    "scheme": "taskplus"
+    "scheme": "taskplus",
+    "extra": {
+      "eas": {
+        "projectId": "6ffa8a83-16c9-4f32-bace-36b9f1606931"
+      }
+    },
+    "owner": "atharvdeshmukh-thegeniusdev"
   }
 }
