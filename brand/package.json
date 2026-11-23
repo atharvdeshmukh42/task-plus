@@ -1,0 +1,13 @@
+{
+  "name": "taskplus-brand",
+  "private": true,
+  "type": "module",
+  "description": "Task Plus logo source. `npm run build` regenerates every SVG and PNG used by the web and mobile apps.",
+  "scripts": {
+    "build": "node generate.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "opentype.js": "^2.0.0"
+  }
+}

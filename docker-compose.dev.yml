@@ -1,0 +1,26 @@
+# Local development: only PostgreSQL runs in Docker.
+# Start once and leave it running:  docker compose -f docker-compose.dev.yml up -d
+# The API, web app and mobile app run natively with hot reload.
+name: taskplus-dev
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: taskplus
+      POSTGRES_PASSWORD: taskplus
+      POSTGRES_DB: taskplus
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+      - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskplus -d taskplus"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata-dev:

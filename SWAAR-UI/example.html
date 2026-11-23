@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Packing queue · Dispatch desk</title>
+  <link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="components.css"><link rel="stylesheet" href="example.css">
+  <script src="example.js" defer></script>
+</head>
+<body class="sw-ui">
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" style="position:absolute"><defs><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-undo-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></symbol><symbol id="i-circle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol><symbol id="i-circle-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol><symbol id="i-clock-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4"/><circle cx="12" cy="12" r="10"/></symbol><symbol id="i-clipboard-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-list-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol><symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol></defs></svg>
+  <header class="desk-bar"><div>
+    <span class="brand-mark" aria-hidden="true"><svg class="sw-icon"><use href="#i-package"/></svg></span>
+    <span class="workspace-name">Dispatch desk</span>
+    <label class="theme"><span class="sw-meta">Theme</span>
+      <select id="theme" class="sw-input"><option value="cobalt">Cobalt</option><option value="plum">Plum</option></select>
+    </label>
+  </div></header>
+  <main>
+    <div class="page-head"><div><h1 class="sw-page-title">Packing queue</h1><p>Prepare outgoing orders for dispatch.</p></div>
+      <button type="button" id="new" class="sw-btn sw-btn--primary"><svg class="sw-icon" aria-hidden="true"><use href="#i-plus"/></svg>New pick list</button>
+    </div>
+    <div id="notice" class="notice" hidden><span id="notice-text"></span><button id="undo" class="sw-btn">Undo</button></div>
+    <section class="sw-panel" aria-label="Pick lists">
+      <div class="toolbar">
+        <div id="filters" class="filters" role="group" aria-label="Filter by packing status">
+          <button type="button" class="sw-btn sw-btn--quiet filter" data-filter="All" aria-pressed="true">All</button>
+          <button type="button" class="sw-btn sw-btn--quiet filter" data-filter="Ready" aria-pressed="false">Ready</button>
+          <button type="button" class="sw-btn sw-btn--quiet filter" data-filter="Packed" aria-pressed="false">Packed</button>
+          <button type="button" class="sw-btn sw-btn--quiet filter" data-filter="On hold" aria-pressed="false">On hold</button>
+        </div>
+        <label class="search-wrap"><span class="sw-visually-hidden">Search by order or customer</span><svg aria-hidden="true" class="sw-icon"><use href="#i-search"/></svg>
+          <input id="search" class="sw-input" type="search" placeholder="Search orders or customers">
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="sw-table" role="table">
+          <caption class="sw-visually-hidden">Outgoing orders and packing actions</caption>
+          <thead role="rowgroup"><tr role="row"><th scope="col">Order</th><th scope="col">Customer</th><th scope="col" class="sw-number">Units</th><th scope="col">Status</th><th scope="col"><span class="sw-visually-hidden">Action</span></th></tr></thead>
+          <tbody id="rows" role="rowgroup"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" hidden><strong class="sw-subheading">No matching orders</strong><p>Try a different customer, order number, or status.</p><button type="button" id="clear" class="sw-btn">Clear filters</button></div>
+      <p class="summary sw-meta" id="summary"></p>
+    </section>
+    <p class="sw-meta example-note">SWAAR UI sample · Changes last until you reload this page.</p>
+    <div role="status" class="sw-visually-hidden" id="announcement"></div>
+  </main>
+  <dialog id="create-dialog" class="sw-dialog" aria-labelledby="dialog-heading">
+    <form id="create-form">
+      <h2 id="dialog-heading" class="sw-section-title">New pick list</h2>
+      <div class="form-field"><label class="sw-label" for="customer">Customer</label><input class="sw-input" id="customer" maxlength="64" required autofocus></div>
+      <div class="form-field"><label class="sw-label" for="units">Units to pack</label><input class="sw-input" id="units" type="number" min="1" max="99999" step="1" inputmode="numeric" value="1" required></div>
+      <div class="actions"><button type="button" id="cancel" class="sw-btn">Cancel</button><button class="sw-btn sw-btn--primary" type="submit">Create pick list</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
