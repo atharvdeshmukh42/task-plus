@@ -8,7 +8,7 @@ import { timezones } from '../lib/format';
 function OrganizationForm() {
   const { user, organization } = useMeRequired();
   const update = useUpdateOrganization();
-  const zones = useMemo(() => timezones(), []);
+  const zones = useMemo(() => timezones(organization.timezone), [organization.timezone]);
   const [name, setName] = useState(organization.name);
   const [timezone, setTimezone] = useState(organization.timezone);
   const [message, setMessage] = useState<{ text: string; tone: 'success' | 'warning' } | null>(null);
