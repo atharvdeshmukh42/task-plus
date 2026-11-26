@@ -1,24 +1,77 @@
-import { ChartColumn, ChevronDown, ClipboardList, Ellipsis, ListChecks, LogOut, Settings, Tags, Users } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { ChevronsUpDown, Ellipsis, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Fragment, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { LogoMark } from './Logo';
 import { Dialog } from './ui';
+import { useBoard } from '../api/hooks';
 import { useAuth, useMeRequired } from '../auth/AuthContext';
 import { ACCESS_LABEL } from '../lib/format';
+import { COUNT_LABEL, NAV_FOOTER, canSee, isCurrent, visibleGroups, type NavCount, type NavItem } from '../lib/nav';
 
-/** Top-bar pages. `tab` items also get a slot in the phone tab bar; the rest go in its More sheet. */
-const NAV = [
-  { to: '/', label: 'Today', Icon: ListChecks, end: true, tab: true },
-  { to: '/tasks', label: 'Tasks', Icon: ClipboardList, tab: true },
-  { to: '/people', label: 'People', Icon: Users, tab: true },
-  { to: '/roles', label: 'Roles', Icon: Tags, tab: false },
-  { to: '/reports', label: 'Reports', Icon: ChartColumn, tab: true },
-];
-/** Organization and password settings live in the account menu (desktop) or the More sheet (phone). */
-const SETTINGS = { to: '/settings', label: 'Settings', Icon: Settings };
-const MORE = [...NAV.filter((item) => !item.tab), SETTINGS];
+/* ---------- Sidebar width ---------- */
 
-const isAt = (pathname: string, to: string) => pathname === to || pathname.startsWith(`${to}/`);
+/** Below this width the sidebar is always the icon rail; above it, each viewer chooses. */
+const NARROW_QUERY = '(max-width: 64rem)';
+const RAIL_KEY = 'taskplus.sidebar';
+
+function subscribeNarrow(onChange: () => void) {
+  const query = window.matchMedia(NARROW_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+const isNarrow = () => window.matchMedia(NARROW_QUERY).matches;
+
+function readRailPreference(): boolean {
+  try {
+    return localStorage.getItem(RAIL_KEY) === 'rail';
+  } catch {
+    return false;
+  }
+}
+
+function saveRailPreference(rail: boolean) {
+  try {
+    localStorage.setItem(RAIL_KEY, rail ? 'rail' : 'full');
+  } catch {
+    // Storage can be unavailable (private mode); the choice then lasts for this visit only.
+  }
+}
+
+/* ---------- Live counts ---------- */
+
+function useNavCounts(): Partial<Record<NavCount, number>> {
+  // Same query as the Today page's default view, so the two share one cached, polled request.
+  const board = useBoard(null, null);
+  const overdue = board.data?.members.reduce(
+    (sum, { occurrences }) => sum + occurrences.filter((o) => o.status === 'overdue').length,
+    0,
+  );
+  return { overdue };
+}
+
+function CountBadge({ kind, value, className }: { kind: NavCount; value?: number; className: string }) {
+  if (!value) return null;
+  return (
+    <span className={className}>
+      <span className="sw-visually-hidden">, </span>
+      {value}
+      <span className="sw-visually-hidden"> {COUNT_LABEL[kind]}</span>
+    </span>
+  );
+}
+
+function SideLink({ item, count }: { item: NavItem; count?: number }) {
+  const { to, label, Icon, end } = item;
+  return (
+    <NavLink to={to} end={end} className="nav-link">
+      <Icon className="nav-link__icon" aria-hidden="true" />
+      <span className="nav-link__label">{label}</span>
+      {item.count && <CountBadge kind={item.count} value={count} className="nav-badge" />}
+    </NavLink>
+  );
+}
+
+/* ---------- Account ---------- */
 
 function initials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
@@ -29,7 +82,6 @@ function initials(name: string): string {
 function AccountMenu() {
   const { user, organization } = useMeRequired();
   const { signOut } = useAuth();
-  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -61,7 +113,7 @@ function AccountMenu() {
       <button
         ref={button}
         type="button"
-        className={`account__button${isAt(pathname, SETTINGS.to) ? ' is-current' : ''}`}
+        className="account__button"
         aria-label={`${user.full_name}, account menu`}
         aria-expanded={open}
         aria-controls={menuId}
@@ -74,7 +126,7 @@ function AccountMenu() {
           <strong>{user.full_name}</strong>
           <span className="sw-meta">{ACCESS_LABEL[user.access_level]}</span>
         </span>
-        <ChevronDown className="account__chevron" aria-hidden="true" />
+        <ChevronsUpDown className="account__chevron" aria-hidden="true" />
       </button>
       {open && (
         <div id={menuId} className="account-menu">
@@ -90,10 +142,6 @@ function AccountMenu() {
               </span>
             </div>
           </div>
-          <NavLink to={SETTINGS.to} className="account-menu__item" onClick={() => setOpen(false)}>
-            <SETTINGS.Icon aria-hidden="true" />
-            {SETTINGS.label}
-          </NavLink>
           <button type="button" className="account-menu__item" onClick={signOut}>
             <LogOut aria-hidden="true" />
             Sign out
@@ -104,49 +152,115 @@ function AccountMenu() {
   );
 }
 
+/* ---------- Shell ---------- */
+
 export function AppShell() {
   const { user, organization } = useMeRequired();
   const { signOut } = useAuth();
   const { pathname } = useLocation();
+  const counts = useNavCounts();
+  const narrow = useSyncExternalStore(subscribeNarrow, isNarrow);
+  const [collapsed, setCollapsed] = useState(readRailPreference);
   const [moreOpen, setMoreOpen] = useState(false);
-  const inMore = MORE.some(({ to }) => isAt(pathname, to));
+  const rail = narrow || collapsed;
+
+  const groups = visibleGroups(user.access_level);
+  const footer = NAV_FOOTER.filter((item) => canSee(item, user.access_level));
+  const tabs = groups.flatMap((group) => group.items).filter((item) => item.tab);
+  const moreGroups = groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !item.tab) }))
+    .filter((group) => group.items.length > 0);
+  const inMore = [...moreGroups.flatMap((group) => group.items), ...footer].some((item) => isCurrent(pathname, item));
+
+  function toggleRail() {
+    setCollapsed(!collapsed);
+    saveRailPreference(!collapsed);
+  }
+
+  const brand = (
+    <Link to="/" className="brand" aria-label={`${organization.name}, Today`}>
+      <LogoMark size={32} className="brand-logo" />
+      <span className="workspace-name">{organization.name}</span>
+    </Link>
+  );
 
   return (
-    <>
+    <div className={`shell${rail ? ' shell--rail' : ''}`}>
       <a href="#main" className="sw-visually-hidden">
         Skip to content
       </a>
-      <header className="desk-bar">
-        <div className="desk-bar__inner">
-          <NavLink to="/" className="brand" aria-label={`${organization.name}, Today`}>
-            <LogoMark size={32} className="brand-logo" />
-            <span className="workspace-name">{organization.name}</span>
-          </NavLink>
-          <nav className="main-nav" aria-label="Main">
-            {NAV.map(({ to, label, Icon, end }) => (
-              <NavLink key={to} to={to} end={end} className="nav-tab">
-                <Icon aria-hidden="true" />
-                {label}
-              </NavLink>
+
+      <aside className="sidebar">
+        <div className="sidebar__brand">{brand}</div>
+        <nav className="sidebar__nav" aria-label="Main">
+          {groups.map((group, index) => {
+            const headingId = `nav-group-${index}`;
+            return (
+              <div key={group.label ?? index} className="nav-group">
+                {group.label && (
+                  <p id={headingId} className="nav-group__label">
+                    {group.label}
+                  </p>
+                )}
+                <ul aria-labelledby={group.label ? headingId : undefined}>
+                  {group.items.map((item) => (
+                    <li key={item.to}>
+                      <SideLink item={item} count={item.count && counts[item.count]} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </nav>
+        <div className="sidebar__footer">
+          <ul>
+            {footer.map((item) => (
+              <li key={item.to}>
+                <SideLink item={item} />
+              </li>
             ))}
-          </nav>
+          </ul>
           <AccountMenu />
+          {!narrow && (
+            <button type="button" className="nav-link sidebar__toggle" onClick={toggleRail}>
+              {rail ? (
+                <PanelLeftOpen className="nav-link__icon" aria-hidden="true" />
+              ) : (
+                <PanelLeftClose className="nav-link__icon" aria-hidden="true" />
+              )}
+              <span className="nav-link__label">{rail ? 'Expand sidebar' : 'Collapse sidebar'}</span>
+            </button>
+          )}
         </div>
-      </header>
+      </aside>
+
+      {/* Phone widths only (CSS hides the sidebar there and shows this bar and the tab bar). */}
+      <header className="phone-bar">{brand}</header>
+
       <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
 
-      {/* Phone widths only (CSS hides it elsewhere). */}
       <nav className="tab-bar" aria-label="Main">
-        {NAV.filter((item) => item.tab).map(({ to, label, Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className="tab-bar__item">
-            <span className="tab-bar__icon">
-              <Icon aria-hidden="true" />
-            </span>
-            {label}
-          </NavLink>
-        ))}
+        {tabs.map(({ to, label, Icon, end, count }) => {
+          const value = count && counts[count];
+          return (
+            <NavLink key={to} to={to} end={end} className="tab-bar__item">
+              <span className="tab-bar__icon">
+                <Icon aria-hidden="true" />
+                {/* The number sits on the icon; screen readers hear it after the label instead. */}
+                {count && value ? (
+                  <span className="tab-bar__badge" aria-hidden="true">
+                    {value}
+                  </span>
+                ) : null}
+              </span>
+              {label}
+              {count && value ? <span className="sw-visually-hidden">{`, ${value} ${COUNT_LABEL[count]}`}</span> : null}
+            </NavLink>
+          );
+        })}
         <button
           type="button"
           className={`tab-bar__item${inMore ? ' is-current' : ''}`}
@@ -162,7 +276,19 @@ export function AppShell() {
       </nav>
       <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title="More" sheet>
         <nav className="sheet-nav" aria-label="More">
-          {MORE.map(({ to, label, Icon }) => (
+          {moreGroups.map((group, index) => (
+            <Fragment key={group.label ?? index}>
+              {group.label && <p className="sheet-nav__label">{group.label}</p>}
+              {group.items.map(({ to, label, Icon }) => (
+                <NavLink key={to} to={to} onClick={() => setMoreOpen(false)}>
+                  <Icon aria-hidden="true" />
+                  {label}
+                </NavLink>
+              ))}
+            </Fragment>
+          ))}
+          {footer.length > 0 && <hr className="sheet-nav__rule" />}
+          {footer.map(({ to, label, Icon }) => (
             <NavLink key={to} to={to} onClick={() => setMoreOpen(false)}>
               <Icon aria-hidden="true" />
               {label}
@@ -182,6 +308,6 @@ export function AppShell() {
           </button>
         </div>
       </Dialog>
-    </>
+    </div>
   );
 }
