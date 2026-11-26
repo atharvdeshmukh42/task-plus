@@ -125,13 +125,38 @@ export function browserTimezone(): string {
   }
 }
 
-export function timezones(): string[] {
+/** The name this browser reports for a zone, e.g. Chrome reports "Asia/Kolkata" as "Asia/Calcutta". */
+function browserZoneName(zone: string): string | null {
   try {
-    const list = Intl.supportedValuesOf('timeZone');
-    return list.includes('UTC') ? list : ['UTC', ...list];
+    return new Intl.DateTimeFormat('en-US', { timeZone: zone }).resolvedOptions().timeZone;
   } catch {
-    return ['UTC', browserTimezone()];
+    return null;
   }
+}
+
+/**
+ * Timezone options for a select, UTC first and the rest sorted.
+ *
+ * `current` is always included. Browsers list some zones under a different
+ * alias (Chrome has "Asia/Calcutta" but not "Asia/Kolkata"), and a select
+ * whose value matches no option shows the first option instead, so saving
+ * the form would silently switch the zone to UTC. When the browser lists
+ * `current` under an alias, the alias is replaced rather than shown twice.
+ */
+export function timezones(current?: string): string[] {
+  let zones: Set<string>;
+  try {
+    zones = new Set(Intl.supportedValuesOf('timeZone'));
+  } catch {
+    zones = new Set([browserTimezone()]);
+  }
+  if (current && !zones.has(current)) {
+    const alias = browserZoneName(current);
+    if (alias) zones.delete(alias);
+    zones.add(current);
+  }
+  zones.delete('UTC');
+  return ['UTC', ...[...zones].sort()];
 }
 
 export type RangePreset = '7' | '14' | '30' | 'custom';

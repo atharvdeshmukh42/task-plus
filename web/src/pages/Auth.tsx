@@ -87,7 +87,7 @@ export function SignUp() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
-  const zones = useMemo(() => timezones(), []);
+  const zones = useMemo(() => timezones(browserTimezone()), []);
   const [values, setValues] = useState({
     organization_name: '',
     full_name: '',
