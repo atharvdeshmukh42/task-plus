@@ -52,11 +52,11 @@ function TaskTable({ tasks, caption }: { tasks: TaskTally[]; caption: string }) 
               <td>
                 <TargetLabel task={task} />
               </td>
-              <td className="sw-number">{summary.done}</td>
-              <td className="sw-number">{summary.late}</td>
-              <td className="sw-number">{summary.missed}</td>
-              <td className="sw-number">{summary.open}</td>
-              <td className="sw-number">
+              <td className="sw-number" data-label="Done">{summary.done}</td>
+              <td className="sw-number" data-label="Late">{summary.late}</td>
+              <td className="sw-number" data-label="Missed">{summary.missed}</td>
+              <td className="sw-number" data-label="Open">{summary.open}</td>
+              <td className="sw-number" data-label="Completion">
                 <RateCell value={summary.completion_rate} />
               </td>
             </tr>
@@ -134,12 +134,12 @@ export function Reports() {
                         {member.roles.map((r) => r.name).join(', ') || ACCESS_LABEL[member.access_level]}
                       </span>
                     </th>
-                    <td className="sw-number">{summary.total}</td>
-                    <td className="sw-number">{summary.done}</td>
-                    <td className="sw-number">{summary.late}</td>
-                    <td className="sw-number">{summary.missed}</td>
-                    <td className="sw-number">{summary.open}</td>
-                    <td className="sw-number">
+                    <td className="sw-number" data-label="Assigned">{summary.total}</td>
+                    <td className="sw-number" data-label="Done">{summary.done}</td>
+                    <td className="sw-number" data-label="Late">{summary.late}</td>
+                    <td className="sw-number" data-label="Missed">{summary.missed}</td>
+                    <td className="sw-number" data-label="Open">{summary.open}</td>
+                    <td className="sw-number" data-label="Completion">
                       <RateCell value={summary.completion_rate} />
                     </td>
                   </tr>
@@ -245,8 +245,12 @@ export function MemberReport() {
                     <td>
                       <StatusBadge status={o.status} />
                     </td>
-                    <td className="sw-numeric">{o.completion ? formatStamp(o.completion.completed_at, organization.timezone) : '—'}</td>
-                    <td>{o.completion?.note ?? <span className="sw-meta">—</span>}</td>
+                    <td className={`sw-numeric${o.completion ? '' : ' cell-empty'}`} data-label={o.completion ? 'Completed' : undefined}>
+                      {o.completion ? formatStamp(o.completion.completed_at, organization.timezone) : '—'}
+                    </td>
+                    <td className={o.completion?.note ? undefined : 'cell-empty'}>
+                      {o.completion?.note ? `“${o.completion.note}”` : <span className="sw-meta">—</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

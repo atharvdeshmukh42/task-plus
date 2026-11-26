@@ -1,5 +1,7 @@
 /* App layout. Reusable controls come from ui/components.css (SWAAR UI). */
 html, body { margin: 0; min-height: 100%; background: var(--sw-canvas); }
+/* viewport-fit=cover lets the phone tab bar reach the home indicator; keep content clear of side notches. */
+body.sw-ui { padding-inline: env(safe-area-inset-left) env(safe-area-inset-right); }
 #root { min-height: 100vh; }
 .sw-ui { min-height: 100vh; }
 .sw-ui a { color: var(--sw-accent); }
@@ -184,6 +186,50 @@ html, body { margin: 0; min-height: 100%; background: var(--sw-canvas); }
 .sw-ui .chart__tooltip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
 .sw-ui .chart__empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--sw-muted); }
 
+/* ---------- Today board ---------- */
+.sw-ui { --chart-todo: #BDC5BF; }
+.sw-ui .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.sw-ui .swatch--done { background: var(--chart-done); }
+.sw-ui .swatch--late { background: var(--chart-late); }
+.sw-ui .swatch--missed { background: var(--chart-missed); }
+/* Overdue is still open, so it is hatched rather than solid like "done late". */
+.sw-ui .swatch--overdue { background: repeating-linear-gradient(135deg, var(--chart-late) 0 2px, var(--sw-warning-soft) 2px 4px); }
+.sw-ui .swatch--todo { background: var(--chart-todo); }
+.sw-ui .status-bar { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
+.sw-ui .status-bar:empty { background: var(--sw-subtle); }
+.sw-ui .status-bar--small { width: 5rem; height: 6px; border-radius: 3px; flex: none; }
+.sw-ui .status-bar__seg { display: block; min-width: 3px; }
+.sw-ui .day-summary { display: grid; gap: var(--sw-space-12); padding: var(--sw-space-16) var(--sw-space-16) 0; }
+.sw-ui .day-summary__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-8) var(--sw-space-12); flex-wrap: wrap; min-height: var(--sw-section-line); }
+.sw-ui .day-summary__headline { font: var(--sw-section-weight) var(--sw-section-size)/var(--sw-section-line) var(--sw-font); letter-spacing: -.015em; }
+.sw-ui .day-summary__headline strong { font-weight: inherit; }
+.sw-ui .day-summary__badges { display: flex; gap: var(--sw-space-8); flex-wrap: wrap; }
+.sw-ui .filter { gap: 6px; }
+.sw-ui .board-group__head th { background: var(--sw-canvas); padding-block: var(--sw-space-8); }
+.sw-ui .person-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-4) var(--sw-space-16); flex-wrap: wrap; }
+.sw-ui .person-head__name { display: flex; align-items: baseline; gap: var(--sw-space-8); flex-wrap: wrap; min-width: 0; }
+.sw-ui .sw-table .person-head__name a { color: inherit; font-weight: 600; text-decoration: none; }
+.sw-ui .sw-table .person-head__name a:hover { color: var(--sw-accent); text-decoration: underline; }
+.sw-ui .person-head__progress { display: flex; align-items: center; gap: var(--sw-space-12); }
+.sw-ui .board-table__done-label { display: none; }
+
+/* ---------- Phone tab bar and More sheet ---------- */
+.sw-ui .tab-bar { display: none; }
+.sw-ui .sw-dialog--sheet {
+  margin: auto 0 0; width: 100%; max-width: 100%;
+  border-bottom: 0; border-radius: var(--sw-radius-panel) var(--sw-radius-panel) 0 0;
+  padding-bottom: calc(var(--sw-space-24) + env(safe-area-inset-bottom));
+}
+.sw-ui .sw-dialog--sheet[open] { animation: sheet-in var(--sw-motion-panel) ease-out; }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+.sw-ui .sheet-nav { display: grid; gap: var(--sw-space-4); margin-inline: calc(-1 * var(--sw-space-12)); }
+.sw-ui .sheet-nav a { display: flex; align-items: center; gap: var(--sw-space-12); min-height: var(--sw-height-touch); padding: 0 var(--sw-space-12); border-radius: var(--sw-radius-control); color: var(--sw-ink); font-weight: var(--sw-label-weight); text-decoration: none; }
+.sw-ui .sheet-nav a:hover { background: var(--sw-subtle); }
+.sw-ui .sheet-nav a svg { width: 20px; height: 20px; color: var(--sw-muted); }
+.sw-ui .sheet-nav a[aria-current="page"], .sw-ui .sheet-nav a[aria-current="page"] svg { background: var(--sw-accent-soft); color: var(--sw-accent); }
+.sw-ui .sheet-account { display: flex; align-items: center; justify-content: space-between; gap: var(--sw-space-12); margin-top: var(--sw-space-16); padding-top: var(--sw-space-16); border-top: 1px solid var(--sw-line); }
+.sw-ui .sheet-account strong { display: block; font-weight: var(--sw-label-weight); }
+
 /* ---------- Day navigator ---------- */
 .sw-ui .day-nav { display: flex; align-items: center; gap: var(--sw-space-4); }
 .sw-ui .icon-btn { padding: 0; width: var(--sw-height-control); }
@@ -205,17 +251,75 @@ html, body { margin: 0; min-height: 100%; background: var(--sw-canvas); }
 }
 @media (max-width: 46rem) {
   .sw-ui .desk-bar__inner, .sw-ui .page, .sw-ui .page--narrow { width: calc(100% - 2rem); }
-  .sw-ui .desk-bar__inner { flex-wrap: wrap; gap: var(--sw-space-8) var(--sw-space-12); padding-block: var(--sw-space-8); }
-  .sw-ui .main-nav { order: 3; width: 100%; margin-left: 0; }
+  .sw-ui .desk-bar__inner { min-height: 56px; }
+  .sw-ui .workspace-name { max-width: none; }
   .sw-ui .page { padding-block: var(--sw-space-24); }
   .sw-ui .page-head { flex-direction: column; align-items: stretch; }
-  .sw-ui .toolbar { align-items: stretch; flex-direction: column; }
+  /* nowrap keeps it a single flex line, so children stretch to the toolbar instead of their own content width. */
+  .sw-ui .toolbar { align-items: stretch; flex-direction: column; flex-wrap: nowrap; }
+  .sw-ui .toolbar__group .search-wrap { flex: 1 1 12rem; }
   .sw-ui .search-wrap input { width: 100%; }
   .sw-ui .field-row { grid-template-columns: 1fr; }
   .sw-ui .form-section { padding: var(--sw-space-16); }
   .sw-ui .chart { padding-inline: var(--sw-space-16); }
   .sw-ui .chart__labels span:nth-child(even) { visibility: hidden; }
   .sw-ui .auth__card { padding: var(--sw-space-24); }
+
+  /* Filter chips scroll sideways in one row instead of wrapping. */
+  .sw-ui .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--sw-space-16)); padding-inline: var(--sw-space-16); }
+  .sw-ui .filters::-webkit-scrollbar { display: none; }
+  .sw-ui .filters > * { flex: none; }
+
+  /* Stat tiles: two compact columns, the headline rate across the top. */
+  .sw-ui .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-8); }
+  .sw-ui .stat { padding: var(--sw-space-12); }
+  .sw-ui .stat:first-child { grid-column: 1 / -1; }
+  .sw-ui .stat__value { font-size: 1.375rem; line-height: 1.75rem; margin-top: var(--sw-space-4); }
+
+  /* Navigation moves to a bottom tab bar; Roles, Settings and Sign out live in the More sheet. */
+  .sw-ui .main-nav, .sw-ui .account { display: none; }
+  .sw-ui .tab-bar {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed; inset: auto 0 0; z-index: 5;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: var(--sw-surface); border-top: 1px solid var(--sw-line);
+  }
+  .sw-ui .tab-bar__item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 56px; padding: 6px 2px; border: 0; background: none; cursor: pointer;
+    color: var(--sw-muted); text-decoration: none; font: var(--sw-meta-weight) var(--sw-meta-size)/var(--sw-meta-line) var(--sw-font);
+  }
+  .sw-ui .tab-bar__icon { display: grid; place-items: center; width: 3.5rem; height: 1.75rem; border-radius: 999px; transition: background-color var(--sw-motion-fast) ease-out; }
+  .sw-ui .tab-bar__icon svg { width: 20px; height: 20px; }
+  .sw-ui .tab-bar__item:is([aria-current="page"], .is-current) { color: var(--sw-accent); }
+  .sw-ui .tab-bar__item:is([aria-current="page"], .is-current) .tab-bar__icon { background: var(--sw-accent-soft); }
+  .sw-ui main { padding-bottom: calc(57px + env(safe-area-inset-bottom)); }
+
+  /* Tables: each row becomes a block, cells flow and wrap, numbers carry their own label. */
+  .sw-ui .table-wrap { overflow: visible; }
+  .sw-ui .sw-table, .sw-ui .sw-table tbody { display: block; }
+  .sw-ui .sw-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .sw-ui .sw-table tbody tr, .sw-ui [data-sw-density="compact"] .sw-table tbody tr {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--sw-space-4) var(--sw-space-16);
+    height: auto; padding: var(--sw-space-12) var(--sw-space-16); border-top: 1px solid var(--sw-line);
+  }
+  .sw-ui .sw-table tbody :is(th, td), .sw-ui [data-sw-density="compact"] .sw-table tbody :is(th, td),
+  .sw-ui .sw-table tbody :is(th, td):is(:first-child, :last-child) { display: block; padding: 0; border: 0; text-align: start; min-width: 0; }
+  .sw-ui .sw-table tbody th[scope="row"], .sw-ui .sw-table .skeleton-row td { flex: 1 1 100%; }
+  .sw-ui .sw-table td[data-label]::before { content: attr(data-label) "\00a0"; color: var(--sw-muted); font: var(--sw-meta-weight) var(--sw-meta-size)/var(--sw-meta-line) var(--sw-font); }
+  .sw-ui .sw-table .rate-cell { display: inline-flex; vertical-align: middle; }
+  .sw-ui .sw-table tbody td.cell-empty { display: none; }
+  .sw-ui .sw-table .actions-cell { flex: 1 1 100%; width: auto; text-align: start; margin-left: calc(-1 * var(--sw-space-12)); }
+
+  /* Today board: person header bar, then task title with its status on the right. */
+  .sw-ui .board-table .board-group__head { background: var(--sw-canvas); }
+  .sw-ui .board-table .board-group__head th { flex: 1 1 100%; background: none; }
+  .sw-ui .board-table tbody tr:not(.board-group__head, .skeleton-row) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--sw-space-12); }
+  .sw-ui .board-table tbody tr:not(.board-group__head, .skeleton-row) th { grid-area: 1 / 1; }
+  .sw-ui .board-table .board-table__status { grid-area: 1 / 2; align-self: start; }
+  .sw-ui .board-table :is(.board-table__window, .board-table__completed) { grid-column: 1 / -1; font: var(--sw-meta-weight) var(--sw-meta-size)/var(--sw-meta-line) var(--sw-font); color: var(--sw-muted); }
+  .sw-ui .board-table .board-table__completed { color: var(--sw-ink); }
+  .sw-ui .board-table__done-label { display: inline; }
 }
 
 /* Keep short values on one line so rows scan evenly. */

@@ -127,8 +127,8 @@ export function Roles() {
                     {role.name}
                     {role.description && <span className="sw-meta">{role.description}</span>}
                   </th>
-                  <td className="sw-number">{role.member_count}</td>
-                  <td className="sw-number">{role.task_count}</td>
+                  <td className="sw-number" data-label="People">{role.member_count}</td>
+                  <td className="sw-number" data-label="Tasks">{role.task_count}</td>
                   <td className="actions-cell">
                     <button type="button" className="sw-btn sw-btn--quiet" onClick={() => setEditing({ role })} aria-label={`Edit ${role.name}`}>
                       <Pencil className="sw-icon" aria-hidden="true" />

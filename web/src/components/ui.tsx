@@ -72,17 +72,20 @@ export function Field({
 
 /* ---------- Dialog ---------- */
 
+/** A modal dialog. `sheet` docks it to the bottom of the screen and also closes it on a backdrop tap. */
 export function Dialog({
   open,
   onClose,
   title,
   wide,
+  sheet,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   wide?: boolean;
+  sheet?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -114,8 +117,15 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className={`sw-dialog${wide ? ' sw-dialog--wide' : ''}`}
+      className={`sw-dialog${wide ? ' sw-dialog--wide' : ''}${sheet ? ' sw-dialog--sheet' : ''}`}
       aria-labelledby={headingId}
+      onClick={(event) => {
+        // A click on the dialog element itself outside its box is a click on the backdrop.
+        if (!sheet || event.target !== event.currentTarget) return;
+        const box = event.currentTarget.getBoundingClientRect();
+        const inside = event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!inside) onClose();
+      }}
       onClose={() => {
         onClose();
         returnFocus.current?.focus();
